@@ -1019,6 +1019,67 @@ function run(settings) {
     }
     for (let index = 0; index < column_object.length; index++) {
       column_object[index].removeAttribute("opd_init_webview");
+      // iframe接続拒否時のリトライ処理
+      (function (iframe) {
+        try {
+          const src = iframe.getAttribute("src") || "";
+          if (src.indexOf("x.com") !== -1) {
+            const maxRetries = 3; // 最大リトライ回数
+            const baseDelay = 2000; // ms
+            let attempts = 0;
+            let loaded = false;
+            const originalSrc = src;
+
+            function markLoaded() {
+              loaded = true;
+            }
+
+            iframe.addEventListener("load", markLoaded);
+
+            function tryLoad() {
+              if (loaded) return;
+              attempts++;
+              try {
+                const u = new URL(originalSrc, location.href);
+                u.searchParams.set("opd_retry_ts", Date.now());
+                iframe.src = u.toString();
+              } catch (e) {
+                // Fallback: set attribute directly
+                iframe.setAttribute(
+                  "src",
+                  originalSrc +
+                    (originalSrc.indexOf("?") === -1 ? "?" : "&") +
+                    "opd_retry_ts=" +
+                    Date.now()
+                );
+              }
+
+              // Wait a reasonable time for load; if not loaded, schedule retry
+              const checkDelay = 5000; // ms
+              setTimeout(function () {
+                if (loaded) return;
+                if (attempts < maxRetries) {
+                  const nextDelay = baseDelay * Math.pow(2, attempts - 1);
+                  console.warn(
+                    `opd: iframe ${originalSrc} load not detected, retrying (attempt ${
+                      attempts + 1
+                    }) in ${nextDelay}ms`
+                  );
+                  setTimeout(tryLoad, nextDelay);
+                } else {
+                  console.error(
+                    `opd: iframe ${originalSrc} failed to load after ${attempts} attempts`
+                  );
+                }
+              }, checkDelay);
+            }
+
+            setTimeout(tryLoad, 100);
+          }
+        } catch (e) {
+          console.error("opd: iframe retry setup error", e);
+        }
+      })(column_object[index]);
       //バナー/表示モード変更
       column_object[index].addEventListener("load", function () {
         console.log(this.getAttribute("opd_iframe_width_only"));
