@@ -1,4 +1,8 @@
-# Open-Deck
+一部スタイル・アイコン変更版
+
+---
+
+# [Open-Deck](https://github.com/kw-nobu/Open-Deck)
 ![icon](https://github.com/kawa-nobu/Open-Deck/assets/44832116/3d4d1e64-6a74-4587-a248-da8424190d41)  
 
 
