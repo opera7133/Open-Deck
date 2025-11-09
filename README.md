@@ -1,7 +1,5 @@
 一部スタイル・アイコン変更版
 
-# ライセンス
-
 - Open-Deck: kw-nobu (MIT License) : https://github.com/kw-nobu/Open-Deck
 - Material Icons: Google (Apache-2.0 License) : https://github.com/google/material-design-icons
 
